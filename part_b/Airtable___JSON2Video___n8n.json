@@ -1,0 +1,181 @@
+{
+  "name": "Airtable + JSON2Video + n8n",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -420,
+        -100
+      ],
+      "id": "d10bd981-2b9d-4234-a873-a20aa658291e",
+      "name": "When clicking ‘Test workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "app8M2JP3WTQiAuL2",
+          "mode": "list",
+          "cachedResultName": "Video Automation",
+          "cachedResultUrl": "https://airtable.com/app8M2JP3WTQiAuL2"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblef7sc9FrtKvAk8",
+          "mode": "list",
+          "cachedResultName": "Script",
+          "cachedResultUrl": "https://airtable.com/app8M2JP3WTQiAuL2/tblef7sc9FrtKvAk8"
+        },
+        "options": {},
+        "sort": {
+          "property": [
+            {
+              "field": "Order"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -200,
+        -100
+      ],
+      "id": "d9410c30-0ffc-4d0c-b247-180fb7f2ba6e",
+      "name": "Airtable",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "glEextkYQKe3LtEb",
+          "name": "make or n8n"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"comment\": \"Scene {{ $json.Order }}\",\n  \"elements\": [\n    {\n      \"type\": \"image\",\n      \"src\": \"{{ $json.Photo[0].url }}\",\n      \"zoom\": -1,\n      \"position\": \"center-center\",\n      \"volume\": 0\n    },\n    {\n      \"type\": \"voice\",\n      \"text\": \"{{ $json.Line }}\"\n    }\n  ]\n}\n\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        20,
+        -100
+      ],
+      "id": "42e3f6ac-aec2-4c37-8897-84fa71d63ea5",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "scenes",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        240,
+        -100
+      ],
+      "id": "36618c64-8551-436e-bcfe-1bed7f1d97c0",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.json2video.com/v2/movies",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"comment\": \"Movie\",\n    \"resolution\": \"full-hd\",\n    \"quality\": \"high\",\n    \"scenes\": {{ JSON.stringify($json.scenes) }},\n    \"elements\": [\n        {\n            \"type\": \"subtitles\",\n            \"settings\": {\n                \"font-family\": \"Boldonse-Regular\",\n                \"font-url\": \"https://www.dropbox.com/scl/fi/9x84netesf7acx9d6qml4/Boldonse-Regular.ttf?rlkey=bps6ymww8oe67vcg1f4bl1uqq&st=fp5e1jic&raw=1\",\n                \"box-color\": \"#8a112d\",\n                \"font-size\": 160,\n                \"word-color\": \"#FFFFFF\",\n                \"position\": \"center-center\",\n                \"style\": \"boxed-word\",\n                \"outline-color\": \"#000000\",\n                \"outline-width\": 2,\n                \"shadow-color\": \"#000000\",\n                \"shadow-offset\": 4,\n                \"max-words-per-line\": 4\n            }\n        }\n    ]\n}",
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        460,
+        -100
+      ],
+      "id": "3c679cf2-e2fb-4764-a775-3cec008b8209",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "EFAOVkq5D6fTc0eW",
+          "name": "JSON2Video Auth Header"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "Airtable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Airtable": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "bff7286e-f860-4397-b9af-a18e33382387",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "59163ef64e1cf4dcd8e0818ffdc09c87dbd57c11199a791813b2ff3820cc01aa"
+  },
+  "id": "uUaBBuH6P9vgAT7E",
+  "tags": []
+}
